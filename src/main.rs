@@ -265,12 +265,40 @@ mod day03{
     }
 
 }
+mod day04 {
+    pub fn range_fully_containing(range_a_start: usize, range_a_end: usize, range_b_start: usize, range_b_end: usize) -> bool {
+        (range_a_start >= range_b_start && range_a_end <= range_b_end) || (range_b_start >= range_a_start && range_b_end <= range_a_end)
+    }
+
+    pub fn get_range_containing_number(data: String) -> usize {
+        let split = data.lines();
+        let mut total = 0;
+
+        for s in split {
+            let mut ranges = s.split(",");
+            let mut range_a = ranges.next().unwrap().split("-");
+            let mut range_b = ranges.next().unwrap().split("-");
+            let range_a_start = range_a.next().unwrap().parse::<usize>().unwrap();
+            let range_a_end = range_a.next().unwrap().parse::<usize>().unwrap();
+            let range_b_start = range_b.next().unwrap().parse::<usize>().unwrap();
+            let range_b_end = range_b.next().unwrap().parse::<usize>().unwrap();
+            if range_fully_containing(range_a_start, range_a_end, range_b_start, range_b_end) {
+                total += 1;
+            }
+
+        }
+        print!("Day 4: {}\n", total);
+        total
+    }
+}
 fn main() {
     day01::find_max(read_input(1));
     day02::calculate_scores(read_input(2));
     day02::calculate_scores_part2(read_input(2));
     day03::get_rucksacks_total_priority(read_input(3));
     day03::get_three_groupings_total_priority(read_input(3));
+    day04::get_range_containing_number(read_input(4));
+
 
 
 
