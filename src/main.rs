@@ -404,6 +404,104 @@ mod day06{
         print!("Day 6 p2: {}\n", b);
     }
 }
+mod day07 {
+    pub fn get_parent_dir(dir_str: String) -> String {
+        let mut parts = dir_str.split("/");
+        let mut new_dir = "/".to_string();
+        let new_parts_num = parts.clone().count() - 2;
+        if new_parts_num == 1 {
+            return new_dir;
+        } else if new_parts_num == 0 {
+            return "".to_string();
+        }
+        for (i, part) in parts.enumerate() {
+            if i == new_parts_num {
+                break;
+            }
+            if part == "" {
+                continue;
+            }
+            new_dir.push_str(part);
+            new_dir.push_str("/");
+        }
+        print!("new_dir: {}\n", new_dir);
+        new_dir
+    }
+
+    pub fn get_dir_sizes(data: String) {
+        let mut lines = data.lines();
+        // each dir has name, a parent, size and children
+        let mut paths: Vec<(String, usize, Vec<String>)> = Vec::new();
+        let mut getting_output = false;
+        let mut cur_dir = String::new();
+        let mut prev_dir = String::new();
+        let mut root_dir = String::new();
+        for line in lines {
+            let mut parts = line.split(" ");
+            if line.starts_with('$') {
+                getting_output = false;
+                parts.next();
+                let cur_fun = parts.next().unwrap().to_string();
+                match cur_fun.as_str() {
+                    "cd" => {
+                        prev_dir = cur_dir.clone();
+                        let new_dir = parts.next().unwrap();
+                        if new_dir == ".." {
+                            cur_dir = get_parent_dir(cur_dir);
+                        } else {
+                            if cur_dir != "/" {
+                                if new_dir == "/" {
+                                    cur_dir = new_dir.to_string();
+                                } else {
+                                    cur_dir = cur_dir + &new_dir.to_string() + "/";
+                                }
+                            } else {
+                                cur_dir = cur_dir + &new_dir.to_string() + "/";
+                            }
+                        }
+                        if prev_dir == "" {
+                            root_dir = cur_dir.clone();
+                            if new_dir == "/" {
+                                paths.push((cur_dir.clone(), 0, Vec::new()));
+                            }
+                        }
+                    },
+                    "ls" => {
+                        // do nothing
+                    },
+                    _ => {
+                        cur_dir = cur_fun;
+                    }
+                }
+            } else {
+                let part_a = parts.next().unwrap();
+                if part_a == "dir" {
+                    paths.push((cur_dir.clone() + &parts.next().unwrap().to_string().clone() + "/", 0, Vec::new()));
+                } else {
+                    let file_size = part_a.parse::<usize>().unwrap();
+                    let file_name = parts.next().unwrap().to_string();
+                    print!("{} {} {}\n", cur_dir, file_size, file_name);
+                    print!("paths: {:?}\n", paths);
+                    // check if path exists
+                    if paths.iter().find(|x| x.0 == cur_dir.clone() + &file_name).is_none() {
+                        paths.push((cur_dir.clone() + &file_name, file_size, Vec::new()));
+                    }
+                    let mut dir = paths.iter_mut().find(|x| x.0 == cur_dir).unwrap();
+                    dir.1 += file_size;
+                    dir.2.push(file_name);
+                    let mut dir_parent = get_parent_dir(cur_dir.clone());
+                    while dir_parent != "" {
+                        let mut dir = paths.iter_mut().find(|x| x.0 == dir_parent).unwrap();
+                        dir.1 += file_size;
+                        dir_parent = get_parent_dir(dir_parent);
+                    }
+                }
+            }
+        }
+        let root = paths.iter().find(|x| x.0 == root_dir).unwrap().1;
+        print!("Day 7: {}\n", root);
+    }
+}
 fn main() {
     day01::find_max(read_input(1));
     day02::calculate_scores(read_input(2));
@@ -413,6 +511,7 @@ fn main() {
     day04::get_range_containing_number(read_input(4));
     day05::reorder_crates(read_input(5));
     day06::do_both(read_input(6));
+    day07::get_dir_sizes(read_input(7));
 
 
 
