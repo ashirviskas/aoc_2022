@@ -1,4 +1,3 @@
-
 mod day01 {
     pub fn find_max(data: String) -> usize {
         let mut split = data.lines();
@@ -6,15 +5,15 @@ mod day01 {
         let mut tot_max = vec![0, 0, 0];
         let mut min_idx: usize = 0;
         for s in split {
-            if s.eq(""){
+            if s.eq("") {
                 if &cur_sum > tot_max.iter().min().unwrap_or(&0) {
                     tot_max[min_idx] = cur_sum;
                     // Resetting min_idx
-                    for (i, v) in tot_max.iter().enumerate(){
+                    for (i, v) in tot_max.iter().enumerate() {
                         if v < &cur_sum {
-                            min_idx = i; 
+                            min_idx = i;
                             cur_sum = *v;
-                        } 
+                        }
                     }
                 }
                 cur_sum = 0;
@@ -36,10 +35,9 @@ mod day02 {
         my_shapes.insert("Y".to_string(), 2);
         my_shapes.insert("Z".to_string(), 3);
 
-
         let split = data.lines();
         let mut score: usize = 0;
-        for s in split{
+        for s in split {
             // A, X - Rock
             // B, Y - Paper
             // C, Z - Scissors
@@ -47,53 +45,44 @@ mod day02 {
             let my_shape = my_shape_w.trim();
             score += my_shapes[my_shape];
             match my_shape {
-                "X" => {
-                    match opp_shape {
-                        "A" => {
-                            score += 3;
-                        }
-                        "B" => {
-                            score += 0;
-                        }
-                        "C" => {
-                            score += 6;
-                        }
-                        _ => {}
+                "X" => match opp_shape {
+                    "A" => {
+                        score += 3;
                     }
-                }
-                "Y" => {
-                    match opp_shape {
-                        "A" => {
-                            score += 6;
-                        }
-                        "B" => {
-                            score += 3;
-                        }
-                        "C" => {
-                            score += 0;
-                        }
-                        _ => {}
+                    "B" => {
+                        score += 0;
                     }
-                }
-                "Z" => {
-                    match opp_shape {
-                        "A" => {
-                            score += 0;
-                        }
-                        "B" => {
-                            score += 6;
-                        }
-                        "C" => {
-                            score += 3;
-                        }
-                        _ => {}
+                    "C" => {
+                        score += 6;
                     }
-                }
-                _ => {
-
-                }
+                    _ => {}
+                },
+                "Y" => match opp_shape {
+                    "A" => {
+                        score += 6;
+                    }
+                    "B" => {
+                        score += 3;
+                    }
+                    "C" => {
+                        score += 0;
+                    }
+                    _ => {}
+                },
+                "Z" => match opp_shape {
+                    "A" => {
+                        score += 0;
+                    }
+                    "B" => {
+                        score += 6;
+                    }
+                    "C" => {
+                        score += 3;
+                    }
+                    _ => {}
+                },
+                _ => {}
             }
-
         }
         print!("Day 2: {}\n", score);
         score
@@ -105,10 +94,9 @@ mod day02 {
         my_shapes.insert("Y".to_string(), 2);
         my_shapes.insert("Z".to_string(), 3);
 
-
         let split = data.lines();
         let mut score: usize = 0;
-        for s in split{
+        for s in split {
             // A, X - Rock
             // B, Y - Paper
             // C, Z - Scissors
@@ -116,20 +104,18 @@ mod day02 {
             let my_shape = my_shape_w.trim();
             // score += my_shapes[my_shape];
             match my_shape {
-                "X" => {
-                    match opp_shape {
-                        "A" => {
-                            score += 3;
-                        }
-                        "B" => {
-                            score += 1;
-                        }
-                        "C" => {
-                            score += 2;
-                        }
-                        _ => {}
+                "X" => match opp_shape {
+                    "A" => {
+                        score += 3;
                     }
-                }
+                    "B" => {
+                        score += 1;
+                    }
+                    "C" => {
+                        score += 2;
+                    }
+                    _ => {}
+                },
                 "Z" => {
                     score += 6;
                     match opp_shape {
@@ -160,18 +146,15 @@ mod day02 {
                         _ => {}
                     }
                 }
-                _ => {
-
-                }
+                _ => {}
             }
-
         }
         print!("Day 2 p2: {}\n", score);
         score
     }
 }
 
-mod day03{
+mod day03 {
     // using ascii values
     // a = 1, z = 26
     // A = 27, Z = 52
@@ -201,7 +184,7 @@ mod day03{
 
     // Takes a string and returns a single value
     pub fn get_rucksack_priority(data: String) -> usize {
-        let (halve_a, halve_b) = data.split_at(data.len()/2);
+        let (halve_a, halve_b) = data.split_at(data.len() / 2);
         // Find matching items
         let mut priority = 0;
         let matching_char = get_splits_matching_character(halve_a, halve_b);
@@ -235,7 +218,10 @@ mod day03{
         let mut matching_chars = HashMap::new();
         for s in unique_chars_per_string.iter() {
             for c in s.iter() {
-                matching_chars.entry(*c).and_modify(|e| *e += 1).or_insert(1);
+                matching_chars
+                    .entry(*c)
+                    .and_modify(|e| *e += 1)
+                    .or_insert(1);
             }
         }
         let matching_char = matching_chars.iter().find(|&(_, &v)| v == 3).unwrap().0;
@@ -255,7 +241,6 @@ mod day03{
                 // print!("{}\n", full_str);
                 groupings.push(full_str);
             }
-            
         }
         for g in groupings {
             total_priority += get_letter_value(get_three_rucksacks_badge(g));
@@ -263,14 +248,27 @@ mod day03{
         print!("Day 3 p2: {}\n", total_priority);
         total_priority
     }
-
 }
 mod day04 {
-    pub fn range_fully_containing(range_a_start: usize, range_a_end: usize, range_b_start: usize, range_b_end: usize) -> bool {
-        (range_a_start >= range_b_start && range_a_end <= range_b_end) || (range_b_start >= range_a_start && range_b_end <= range_a_end)
+    pub fn range_fully_containing(
+        range_a_start: usize,
+        range_a_end: usize,
+        range_b_start: usize,
+        range_b_end: usize,
+    ) -> bool {
+        (range_a_start >= range_b_start && range_a_end <= range_b_end)
+            || (range_b_start >= range_a_start && range_b_end <= range_a_end)
     }
-    pub fn range_partially_overlapping(range_a_start: usize, range_a_end: usize, range_b_start: usize, range_b_end: usize) -> bool {
-        (range_a_start <= range_b_end && range_a_start >= range_b_start) || (range_a_end <= range_b_end && range_a_end >= range_b_start) || (range_b_start <= range_a_end && range_b_start >= range_a_start) || (range_b_end <= range_a_end && range_b_end >= range_a_start)
+    pub fn range_partially_overlapping(
+        range_a_start: usize,
+        range_a_end: usize,
+        range_b_start: usize,
+        range_b_end: usize,
+    ) -> bool {
+        (range_a_start <= range_b_end && range_a_start >= range_b_start)
+            || (range_a_end <= range_b_end && range_a_end >= range_b_start)
+            || (range_b_start <= range_a_end && range_b_start >= range_a_start)
+            || (range_b_end <= range_a_end && range_b_end >= range_a_start)
     }
 
     pub fn get_range_containing_number(data: String) {
@@ -292,19 +290,16 @@ mod day04 {
             if range_partially_overlapping(range_a_start, range_a_end, range_b_start, range_b_end) {
                 partially_overlapping += 1;
             }
-
         }
         print!("Day 4: {}\n", fully_contained);
         print!("Day 4 p2: {}\n", partially_overlapping);
-
     }
-
 }
-mod day05{
+mod day05 {
     pub fn reorder_crates(data: String) {
         // crates format:
-        //     [D]    
-        // [N] [C]    
+        //     [D]
+        // [N] [C]
         // [Z] [M] [P]
         //  1   2   3
         //
@@ -313,8 +308,8 @@ mod day05{
         // move 2 from 2 to 1
         // move 1 from 1 to 2
         let mut lines = data.lines();
-        let mut crate_stacks :Vec<Vec<char>> = Vec::new();
-        let mut crate_stacks_b :Vec<Vec<char>> = Vec::new();
+        let mut crate_stacks: Vec<Vec<char>> = Vec::new();
+        let mut crate_stacks_b: Vec<Vec<char>> = Vec::new();
 
         // Get crates
         let mut crate_part: bool = true;
@@ -342,11 +337,10 @@ mod day05{
                         if c == ' ' {
                             continue;
                         } else {
-                        crate_stacks[i / 4].insert(0, c);
-                        crate_stacks_b[i / 4].insert(0, c);
+                            crate_stacks[i / 4].insert(0, c);
+                            crate_stacks_b[i / 4].insert(0, c);
                         }
                     }
-                    
                 }
             } else {
                 let mut instructions = line.split(" ");
@@ -361,15 +355,18 @@ mod day05{
                     crate_stacks[to - 1].push(c);
                 }
                 let crate_stacks_b_from_size = crate_stacks_b[from - 1].len();
-                let chars = crate_stacks_b[from - 1].drain(crate_stacks_b_from_size - num..crate_stacks_b_from_size).collect::<Vec<char>>();
+                let chars = crate_stacks_b[from - 1]
+                    .drain(crate_stacks_b_from_size - num..crate_stacks_b_from_size)
+                    .collect::<Vec<char>>();
                 crate_stacks_b[to - 1].extend(chars);
-
             }
         }
-        let top_str = crate_stacks.iter()
+        let top_str = crate_stacks
+            .iter()
             .map(|v| v.last().unwrap())
             .collect::<String>();
-        let top_str_b = crate_stacks_b.iter()
+        let top_str_b = crate_stacks_b
+            .iter()
             .map(|v| v.last().unwrap())
             .collect::<String>();
         print!("Day 5: {}\n", top_str);
@@ -377,10 +374,10 @@ mod day05{
     }
 }
 
-mod day06{
+mod day06 {
     use std::collections::HashSet;
 
-    pub fn get_first_datastream_char(data: String, unique_len: usize) -> usize{
+    pub fn get_first_datastream_char(data: String, unique_len: usize) -> usize {
         let mut stack: Vec<char> = Vec::new();
         let mut res = 0;
         for (i, c) in data.chars().enumerate() {
@@ -392,7 +389,7 @@ mod day06{
                     res = i + 1;
                     break;
                 }
-            } 
+            }
         }
         res
     }
@@ -427,14 +424,16 @@ mod day07 {
         // print!("new_dir: {}\n", new_dir);
         new_dir
     }
-    pub fn calculate_cumulative_dir_sizes(paths: &mut Vec<(String, usize, Vec<String>)>, limit: usize) -> usize{
+    pub fn calculate_cumulative_dir_sizes(
+        paths: &mut Vec<(String, usize, Vec<String>)>,
+        limit: usize,
+    ) -> usize {
         let mut cumulative_size = 0;
         for path in paths.iter_mut() {
             if path.0 == "/" {
                 continue;
             }
-            if !path.0.ends_with("/")
-            {
+            if !path.0.ends_with("/") {
                 continue;
             }
             let mut size = path.1;
@@ -445,7 +444,11 @@ mod day07 {
         }
         cumulative_size
     }
-    pub fn find_smallest_dir_to_delete(paths: &mut Vec<(String, usize, Vec<String>)>, total_space: usize,  needed_space:usize) -> usize {
+    pub fn find_smallest_dir_to_delete(
+        paths: &mut Vec<(String, usize, Vec<String>)>,
+        total_space: usize,
+        needed_space: usize,
+    ) -> usize {
         let mut smallest_dir = String::new();
         let mut smallest_dir_size = 0;
         let current_free_space = total_space - paths[0].1;
@@ -454,8 +457,7 @@ mod day07 {
             if path.0 == "/" {
                 continue;
             }
-            if !path.0.ends_with("/")
-            {
+            if !path.0.ends_with("/") {
                 continue;
             }
             let size = path.1;
@@ -507,10 +509,10 @@ mod day07 {
                                 paths.push((cur_dir.clone(), 0, Vec::new()));
                             }
                         }
-                    },
+                    }
                     "ls" => {
                         // do nothing
-                    },
+                    }
                     _ => {
                         cur_dir = cur_fun;
                     }
@@ -518,14 +520,22 @@ mod day07 {
             } else {
                 let part_a = parts.next().unwrap();
                 if part_a == "dir" {
-                    paths.push((cur_dir.clone() + &parts.next().unwrap().to_string().clone() + "/", 0, Vec::new()));
+                    paths.push((
+                        cur_dir.clone() + &parts.next().unwrap().to_string().clone() + "/",
+                        0,
+                        Vec::new(),
+                    ));
                 } else {
                     let file_size = part_a.parse::<usize>().unwrap();
                     let file_name = parts.next().unwrap().to_string();
                     // print!("{} {} {}\n", cur_dir, file_size, file_name);
                     // print!("paths: {:?}\n", paths);
                     // check if path exists
-                    if paths.iter().find(|x| x.0 == cur_dir.clone() + &file_name).is_none() {
+                    if paths
+                        .iter()
+                        .find(|x| x.0 == cur_dir.clone() + &file_name)
+                        .is_none()
+                    {
                         paths.push((cur_dir.clone() + &file_name, file_size, Vec::new()));
                     }
                     let mut dir = paths.iter_mut().find(|x| x.0 == cur_dir).unwrap();
@@ -558,10 +568,6 @@ fn main() {
     day05::reorder_crates(read_input(5));
     day06::do_both(read_input(6));
     day07::get_dir_sizes(read_input(7));
-
-
-
-
 }
 
 fn read_input(day: usize) -> String {
