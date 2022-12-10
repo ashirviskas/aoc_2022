@@ -376,6 +376,34 @@ mod day05{
         print!("Day 5 p2: {}\n", top_str_b);
     }
 }
+
+mod day06{
+    use std::collections::HashSet;
+
+    pub fn get_first_datastream_char(data: String, unique_len: usize) -> usize{
+        let mut stack: Vec<char> = Vec::new();
+        let mut res = 0;
+        for (i, c) in data.chars().enumerate() {
+            stack.push(c);
+            if stack.len() > unique_len {
+                stack.remove(0);
+                let mut uniq = HashSet::new();
+                if stack.iter().all(move |x| uniq.insert(x)) {
+                    res = i + 1;
+                    break;
+                }
+            } 
+        }
+        res
+    }
+    pub fn do_both(data: String) {
+        let a = get_first_datastream_char(data.clone(), 4);
+        let b = get_first_datastream_char(data.clone(), 14);
+
+        print!("Day 6: {}\n", a);
+        print!("Day 6 p2: {}\n", b);
+    }
+}
 fn main() {
     day01::find_max(read_input(1));
     day02::calculate_scores(read_input(2));
@@ -384,6 +412,7 @@ fn main() {
     day03::get_three_groupings_total_priority(read_input(3));
     day04::get_range_containing_number(read_input(4));
     day05::reorder_crates(read_input(5));
+    day06::do_both(read_input(6));
 
 
 
