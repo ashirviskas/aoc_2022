@@ -424,10 +424,52 @@ mod day07 {
             new_dir.push_str(part);
             new_dir.push_str("/");
         }
-        print!("new_dir: {}\n", new_dir);
+        // print!("new_dir: {}\n", new_dir);
         new_dir
     }
+    pub fn calculate_cumulative_dir_sizes(paths: &mut Vec<(String, usize, Vec<String>)>, limit: usize) -> usize{
+        let mut cumulative_size = 0;
+        for path in paths.iter_mut() {
+            if path.0 == "/" {
+                continue;
+            }
+            if !path.0.ends_with("/")
+            {
+                continue;
+            }
+            let mut size = path.1;
+            if size > limit {
+                continue;
+            }
+            cumulative_size += size;
+        }
+        cumulative_size
+    }
+    pub fn find_smallest_dir_to_delete(paths: &mut Vec<(String, usize, Vec<String>)>, total_space: usize,  needed_space:usize) -> String {
+        let mut smallest_dir = String::new();
+        let mut smallest_dir_size = 0;
+        let current_free_space = total_space - paths[0].1;
 
+        for path in paths.iter() {
+            if path.0 == "/" {
+                continue;
+            }
+            if !path.0.ends_with("/")
+            {
+                continue;
+            }
+            let size = path.1;
+            if size + current_free_space < needed_space {
+                continue;
+            }
+            if smallest_dir_size == 0 || size < smallest_dir_size {
+                smallest_dir_size = size;
+                smallest_dir = path.0.clone();
+            }
+        }
+        print!("smallest_dir: {}\nsize: {}\ntotal_space: {}\nneeded_space: {}\nspace after delete: {}\n", smallest_dir, smallest_dir_size, total_space, needed_space, current_free_space + smallest_dir_size);
+        smallest_dir
+    }
     pub fn get_dir_sizes(data: String) {
         let mut lines = data.lines();
         // each dir has name, a parent, size and children
@@ -480,8 +522,8 @@ mod day07 {
                 } else {
                     let file_size = part_a.parse::<usize>().unwrap();
                     let file_name = parts.next().unwrap().to_string();
-                    print!("{} {} {}\n", cur_dir, file_size, file_name);
-                    print!("paths: {:?}\n", paths);
+                    // print!("{} {} {}\n", cur_dir, file_size, file_name);
+                    // print!("paths: {:?}\n", paths);
                     // check if path exists
                     if paths.iter().find(|x| x.0 == cur_dir.clone() + &file_name).is_none() {
                         paths.push((cur_dir.clone() + &file_name, file_size, Vec::new()));
@@ -498,8 +540,12 @@ mod day07 {
                 }
             }
         }
-        let root = paths.iter().find(|x| x.0 == root_dir).unwrap().1;
-        print!("Day 7: {}\n", root);
+        // let root = paths.iter().find(|x| x.0 == root_dir).unwrap().1;
+        let cumulative_path_size = calculate_cumulative_dir_sizes(&mut paths, 100000);
+        let to_delete_dir = find_smallest_dir_to_delete(&mut paths, 70000000, 30000000);
+
+        print!("Day 7: {}\n", cumulative_path_size);
+        print!("Day 7 p2: {}\n", to_delete_dir);
     }
 }
 fn main() {
