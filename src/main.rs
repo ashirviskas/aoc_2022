@@ -445,7 +445,7 @@ mod day07 {
         }
         cumulative_size
     }
-    pub fn find_smallest_dir_to_delete(paths: &mut Vec<(String, usize, Vec<String>)>, total_space: usize,  needed_space:usize) -> String {
+    pub fn find_smallest_dir_to_delete(paths: &mut Vec<(String, usize, Vec<String>)>, total_space: usize,  needed_space:usize) -> usize {
         let mut smallest_dir = String::new();
         let mut smallest_dir_size = 0;
         let current_free_space = total_space - paths[0].1;
@@ -467,8 +467,8 @@ mod day07 {
                 smallest_dir = path.0.clone();
             }
         }
-        print!("smallest_dir: {}\nsize: {}\ntotal_space: {}\nneeded_space: {}\nspace after delete: {}\n", smallest_dir, smallest_dir_size, total_space, needed_space, current_free_space + smallest_dir_size);
-        smallest_dir
+        // print!("smallest_dir: {}\nsize: {}\ntotal_space: {}\nneeded_space: {}\nspace after delete: {}\n", smallest_dir, smallest_dir_size, total_space, needed_space, current_free_space + smallest_dir_size);
+        smallest_dir_size
     }
     pub fn get_dir_sizes(data: String) {
         let mut lines = data.lines();
