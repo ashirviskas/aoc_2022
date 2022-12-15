@@ -1,6 +1,6 @@
 mod day01 {
     pub fn find_max(data: String) -> usize {
-        let mut split = data.lines();
+        let split = data.lines();
         let mut cur_sum = 0;
         let mut tot_max = vec![0, 0, 0];
         let mut min_idx: usize = 0;
@@ -307,7 +307,7 @@ mod day05 {
         // move 3 from 1 to 3
         // move 2 from 2 to 1
         // move 1 from 1 to 2
-        let mut lines = data.lines();
+        let lines = data.lines();
         let mut crate_stacks: Vec<Vec<char>> = Vec::new();
         let mut crate_stacks_b: Vec<Vec<char>> = Vec::new();
 
@@ -403,7 +403,7 @@ mod day06 {
 }
 mod day07 {
     pub fn get_parent_dir(dir_str: String) -> String {
-        let mut parts = dir_str.split("/");
+        let parts = dir_str.split("/");
         let mut new_dir = "/".to_string();
         let new_parts_num = parts.clone().count() - 2;
         if new_parts_num == 1 {
@@ -436,7 +436,7 @@ mod day07 {
             if !path.0.ends_with("/") {
                 continue;
             }
-            let mut size = path.1;
+            let size = path.1;
             if size > limit {
                 continue;
             }
@@ -449,7 +449,6 @@ mod day07 {
         total_space: usize,
         needed_space: usize,
     ) -> usize {
-        let mut smallest_dir = String::new();
         let mut smallest_dir_size = 0;
         let current_free_space = total_space - paths[0].1;
 
@@ -466,24 +465,20 @@ mod day07 {
             }
             if smallest_dir_size == 0 || size < smallest_dir_size {
                 smallest_dir_size = size;
-                smallest_dir = path.0.clone();
             }
         }
         // print!("smallest_dir: {}\nsize: {}\ntotal_space: {}\nneeded_space: {}\nspace after delete: {}\n", smallest_dir, smallest_dir_size, total_space, needed_space, current_free_space + smallest_dir_size);
         smallest_dir_size
     }
     pub fn get_dir_sizes(data: String) {
-        let mut lines = data.lines();
+        let lines = data.lines();
         // each dir has name, a parent, size and children
         let mut paths: Vec<(String, usize, Vec<String>)> = Vec::new();
-        let mut getting_output = false;
         let mut cur_dir = String::new();
         let mut prev_dir = String::new();
-        let mut root_dir = String::new();
         for line in lines {
             let mut parts = line.split(" ");
             if line.starts_with('$') {
-                getting_output = false;
                 parts.next();
                 let cur_fun = parts.next().unwrap().to_string();
                 match cur_fun.as_str() {
@@ -504,7 +499,6 @@ mod day07 {
                             }
                         }
                         if prev_dir == "" {
-                            root_dir = cur_dir.clone();
                             if new_dir == "/" {
                                 paths.push((cur_dir.clone(), 0, Vec::new()));
                             }
@@ -558,6 +552,78 @@ mod day07 {
         print!("Day 7 p2: {}\n", to_delete_dir);
     }
 }
+
+mod day08 {
+    pub fn count_visible_trees(data: String) {
+        let lines = data.lines();
+        let mut tree_heights: Vec<Vec<usize>> = Vec::new();
+        for line in lines {
+            let chars = line.chars();
+            let mut heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
+            tree_heights.push(heights);            
+        }
+        let mut visible_trees: Vec<Vec<bool>> = Vec::new();
+        let rows_n = tree_heights.len();
+        let cols_n = tree_heights[0].len();
+        // visible from top
+        // visible_trees.push(vec![true; tree_heights[0].len()]);
+        let mut cur_max_heights:Vec<i32> = vec![-1; cols_n];
+        let mut trees_iter = tree_heights.iter();
+        for (i, heights) in trees_iter.enumerate() {
+            let mut cur_visible: Vec<bool> = Vec::new();
+            for j in 0..heights.len() {
+                if cur_max_heights[j] >= heights[j] as i32 {
+                    cur_visible.push(false);
+                } else {
+                    cur_visible.push(true);
+                    cur_max_heights[j] = heights[j] as i32;
+                }
+            }
+            visible_trees.push(cur_visible);
+        }
+        // visible from bottom
+        cur_max_heights = vec![-1; cols_n];
+        let mut trees_iter = tree_heights.iter().rev();
+        for (i, heights) in trees_iter.enumerate() {
+            let mut cur_visible: Vec<bool> = Vec::new();
+            for j in 0..heights.len() {
+                if cur_max_heights[j] >= heights[j] as i32 {
+                    cur_visible.push(false);
+                } else {
+                    // visible_trees[visible_trees.len() - i - 1][j] = true;
+                    cur_visible.push(true);
+                    cur_max_heights[j] = heights[j] as i32;
+                }
+
+            }
+            // logical or
+            visible_trees[rows_n - i - 1] = visible_trees[rows_n - i - 1].iter().zip(cur_visible.iter()).map(|(x, y)| *x || *y).collect();
+        }
+        for (i, heights) in tree_heights.iter().enumerate() {
+            let mut cur_max_height_left = 0;
+            let mut cur_max_height_right = 0;
+            for j in 0..heights.len() {
+                if cur_max_height_left >= heights[j] {
+                    visible_trees[i][j] = visible_trees[i][j] || false;
+                } else {
+                    visible_trees[i][j] = visible_trees[i][j] || true;
+                    cur_max_height_left = heights[j];
+                }
+
+                if cur_max_height_right >= heights[heights.len() - j - 1] {
+                    visible_trees[i][heights.len() - j - 1] = visible_trees[i][heights.len() - j - 1] || false;
+                } else {
+                    visible_trees[i][heights.len() - j - 1] = visible_trees[i][heights.len() - j - 1] || true;
+                    cur_max_height_right = heights[heights.len() - j - 1];
+                }
+            }
+        }
+
+
+        let mut visible_trees_count = visible_trees.iter().fold(0, |acc, x| acc + x.iter().filter(|x| **x).count());
+        print!("Day 8: {}\n", visible_trees_count);
+    }
+}
 fn main() {
     day01::find_max(read_input(1));
     day02::calculate_scores(read_input(2));
@@ -568,6 +634,7 @@ fn main() {
     day05::reorder_crates(read_input(5));
     day06::do_both(read_input(6));
     day07::get_dir_sizes(read_input(7));
+    day08::count_visible_trees(read_input(8));
 }
 
 fn read_input(day: usize) -> String {
