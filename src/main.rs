@@ -693,7 +693,61 @@ mod day08 {
 }
 
 mod day09 {
-    
+    use std::collections::HashMap;
+    pub fn move_tail(head_pos_x: i32, head_pos_y: i32, tail_pos_x: i32, tail_pos_y: i32) -> (i32, i32) {
+        let distance_x = head_pos_x - tail_pos_x;
+        let distance_y = head_pos_y - tail_pos_y;
+        let mut new_tail_pos_x = tail_pos_x;
+        let mut new_tail_pos_y = tail_pos_y;
+
+        if distance_x.abs() > 1 {
+                new_tail_pos_x = tail_pos_x + distance_x - distance_x.signum();
+                new_tail_pos_y = head_pos_y;
+        } else if distance_y.abs() > 1 {
+                new_tail_pos_y = tail_pos_y + distance_y - distance_y.signum();
+                new_tail_pos_x = head_pos_x;
+        }
+        (new_tail_pos_x, new_tail_pos_y)
+    }
+    pub fn calculate_tail_moves(data: String) {
+        let lines = data.lines();
+        let mut head_pos_x: i32 = 0;
+        let mut head_pos_y: i32 = 0;
+        let mut tail_pos_x: i32 = 0;
+        let mut tail_pos_y: i32 = 0;
+        let mut tail_visited: HashMap<(i32, i32), i32> = HashMap::new();
+
+        for line in lines{
+            let (direction, distance) = line.split_at(1);
+            let distance = distance.trim().parse::<i32>().unwrap();
+            for i in 0..distance {
+                match direction {
+                    "U" => {
+                            head_pos_y += 1;
+                    },
+                    "D" => {
+                            head_pos_y -= 1;
+                    },
+                    "L" => {
+                            head_pos_x -= 1;
+                    },
+                    "R" => {
+                            head_pos_x += 1;
+                    },
+                    _ => panic!("Unknown direction"),
+                }
+                let (new_tail_pos_x, new_tail_pos_y) = move_tail(head_pos_x, head_pos_y, tail_pos_x, tail_pos_y);
+                if new_tail_pos_x != tail_pos_x || new_tail_pos_y != tail_pos_y {
+                    tail_pos_x = new_tail_pos_x;
+                    tail_pos_y = new_tail_pos_y;
+                    tail_visited.insert((tail_pos_x, tail_pos_y), 1);
+                }
+            }
+
+        }
+        print!("Day 9: {}\n", tail_visited.len() + 1);
+
+    }
 }
 fn main() {
     day01::find_max(read_input(1));
@@ -707,6 +761,8 @@ fn main() {
     day07::get_dir_sizes(read_input(7));
     day08::count_visible_trees(read_input(8));
     day08::get_most_scenic_tree(read_input(8));
+    day09::calculate_tail_moves(read_input(9));
+
 }
 
 fn read_input(day: usize) -> String {
