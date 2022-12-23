@@ -560,14 +560,14 @@ mod day08 {
         for line in lines {
             let chars = line.chars();
             let mut heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
-            tree_heights.push(heights);            
+            tree_heights.push(heights);
         }
         let mut visible_trees: Vec<Vec<bool>> = Vec::new();
         let rows_n = tree_heights.len();
         let cols_n = tree_heights[0].len();
         // visible from top
         // visible_trees.push(vec![true; tree_heights[0].len()]);
-        let mut cur_max_heights:Vec<i32> = vec![-1; cols_n];
+        let mut cur_max_heights: Vec<i32> = vec![-1; cols_n];
         let mut trees_iter = tree_heights.iter();
         for (i, heights) in trees_iter.enumerate() {
             let mut cur_visible: Vec<bool> = Vec::new();
@@ -594,16 +594,19 @@ mod day08 {
                     cur_visible.push(true);
                     cur_max_heights[j] = heights[j] as i32;
                 }
-
             }
             // logical or
-            visible_trees[rows_n - i - 1] = visible_trees[rows_n - i - 1].iter().zip(cur_visible.iter()).map(|(x, y)| *x || *y).collect();
+            visible_trees[rows_n - i - 1] = visible_trees[rows_n - i - 1]
+                .iter()
+                .zip(cur_visible.iter())
+                .map(|(x, y)| *x || *y)
+                .collect();
         }
         for (i, heights) in tree_heights.iter().enumerate() {
             let mut cur_max_height_left: i32 = -1;
-            let mut cur_max_height_right : i32= -1;
+            let mut cur_max_height_right: i32 = -1;
             for j in 0..heights.len() {
-                if cur_max_height_left >= heights[j] as i32{
+                if cur_max_height_left >= heights[j] as i32 {
                     visible_trees[i][j] = visible_trees[i][j] || false;
                 } else {
                     visible_trees[i][j] = true;
@@ -611,16 +614,18 @@ mod day08 {
                 }
 
                 if cur_max_height_right >= heights[heights.len() - j - 1] as i32 {
-                    visible_trees[i][heights.len() - j - 1] = visible_trees[i][heights.len() - j - 1] || false;
+                    visible_trees[i][heights.len() - j - 1] =
+                        visible_trees[i][heights.len() - j - 1] || false;
                 } else {
-                    visible_trees[i][heights.len() - j - 1] =  true;
+                    visible_trees[i][heights.len() - j - 1] = true;
                     cur_max_height_right = heights[heights.len() - j - 1] as i32;
                 }
             }
         }
 
-
-        let mut visible_trees_count = visible_trees.iter().fold(0, |acc, x| acc + x.iter().filter(|x| **x).count());
+        let mut visible_trees_count = visible_trees
+            .iter()
+            .fold(0, |acc, x| acc + x.iter().filter(|x| **x).count());
         print!("Day 8: {}\n", visible_trees_count);
     }
 
@@ -647,11 +652,11 @@ mod day08 {
                 let mut left = 0;
                 let mut right = 0;
 
-                if i == 0 || j == 0 || i == rows_n_soft - 1 || j == cols_n_soft - 1{
+                if i == 0 || j == 0 || i == rows_n_soft - 1 || j == cols_n_soft - 1 {
                     continue;
                 }
 
-                for ii in i+1..rows_n_soft {
+                for ii in i + 1..rows_n_soft {
                     if tree_heights[ii][j] < tree_heights[i][j] {
                         below += 1;
                     } else {
@@ -668,7 +673,7 @@ mod day08 {
                         break;
                     }
                 }
-                for jj in j+1..cols_n_soft {
+                for jj in j + 1..cols_n_soft {
                     if tree_heights[i][jj] < tree_heights[i][j] {
                         right += 1;
                     } else {
@@ -688,24 +693,46 @@ mod day08 {
                 tree_scores[i][j] = above * below * left * right;
             }
         }
-        print!("Day 8: {}\n", tree_scores.iter().fold(0, |acc, x| acc.max(*x.iter().max().unwrap())))
+        print!(
+            "Day 8: {}\n",
+            tree_scores
+                .iter()
+                .fold(0, |acc, x| acc.max(*x.iter().max().unwrap()))
+        )
     }
 }
 
 mod day09 {
     use std::collections::HashMap;
-    pub fn move_tail(head_pos_x: i32, head_pos_y: i32, tail_pos_x: i32, tail_pos_y: i32) -> (i32, i32) {
+
+    pub fn move_next_node(
+        head_pos_x: i32,
+        head_pos_y: i32,
+        tail_pos_x: i32,
+        tail_pos_y: i32,
+    ) -> (i32, i32) {
+        // x - 5
+        // y - 2
+        // xx - 4
+        // yy - 0
         let distance_x = head_pos_x - tail_pos_x;
         let distance_y = head_pos_y - tail_pos_y;
         let mut new_tail_pos_x = tail_pos_x;
         let mut new_tail_pos_y = tail_pos_y;
 
+        if distance_x.abs() == 2 && distance_y.abs() == 2 {
+            new_tail_pos_x = tail_pos_x + distance_x / 2;
+            new_tail_pos_y = tail_pos_y + distance_y / 2;
+            return (new_tail_pos_x, new_tail_pos_y);
+        }
+        // println!("{} {}", distance_x, distance_y);
         if distance_x.abs() > 1 {
-                new_tail_pos_x = tail_pos_x + distance_x - distance_x.signum();
-                new_tail_pos_y = head_pos_y;
-        } else if distance_y.abs() > 1 {
-                new_tail_pos_y = tail_pos_y + distance_y - distance_y.signum();
-                new_tail_pos_x = head_pos_x;
+            new_tail_pos_x = tail_pos_x + (distance_x.signum());
+            new_tail_pos_y = head_pos_y;
+        }
+        if distance_y.abs() > 1 {
+            new_tail_pos_y = tail_pos_y + (distance_y.signum());
+            new_tail_pos_x = head_pos_x;
         }
         (new_tail_pos_x, new_tail_pos_y)
     }
@@ -717,36 +744,84 @@ mod day09 {
         let mut tail_pos_y: i32 = 0;
         let mut tail_visited: HashMap<(i32, i32), i32> = HashMap::new();
 
-        for line in lines{
+        for line in lines {
             let (direction, distance) = line.split_at(1);
             let distance = distance.trim().parse::<i32>().unwrap();
             for i in 0..distance {
                 match direction {
                     "U" => {
-                            head_pos_y += 1;
-                    },
+                        head_pos_y += 1;
+                    }
                     "D" => {
-                            head_pos_y -= 1;
-                    },
+                        head_pos_y -= 1;
+                    }
                     "L" => {
-                            head_pos_x -= 1;
-                    },
+                        head_pos_x -= 1;
+                    }
                     "R" => {
-                            head_pos_x += 1;
-                    },
+                        head_pos_x += 1;
+                    }
                     _ => panic!("Unknown direction"),
                 }
-                let (new_tail_pos_x, new_tail_pos_y) = move_tail(head_pos_x, head_pos_y, tail_pos_x, tail_pos_y);
+                let (new_tail_pos_x, new_tail_pos_y) =
+                    move_next_node(head_pos_x, head_pos_y, tail_pos_x, tail_pos_y);
                 if new_tail_pos_x != tail_pos_x || new_tail_pos_y != tail_pos_y {
                     tail_pos_x = new_tail_pos_x;
                     tail_pos_y = new_tail_pos_y;
                     tail_visited.insert((tail_pos_x, tail_pos_y), 1);
                 }
             }
-
         }
         print!("Day 9: {}\n", tail_visited.len() + 1);
+    }
 
+    pub fn calculate_multiple_knots_moves(data: String) {
+        let lines = data.lines();
+        const n_knots: usize = 10;
+        let mut nodes_positions: [(i32, i32); n_knots] = [(0, 0); n_knots];
+        let mut tail_nodes_visited: HashMap<(i32, i32), i32> = HashMap::new();
+        for line in lines {
+            let (direction, distance) = line.split_at(1);
+            let distance = distance.trim().parse::<i32>().unwrap();
+            for i in 0..distance {
+                match direction {
+                    "U" => {
+                        nodes_positions[0].1 += 1;
+                    }
+                    "D" => {
+                        nodes_positions[0].1 -= 1;
+                    }
+                    "L" => {
+                        nodes_positions[0].0 -= 1;
+                    }
+                    "R" => {
+                        nodes_positions[0].0 += 1;
+                    }
+                    _ => panic!("Unknown direction"),
+                }
+                for j in 1..n_knots {
+                    let (new_tail_pos_x, new_tail_pos_y) = move_next_node(
+                        nodes_positions[j - 1].0,
+                        nodes_positions[j - 1].1,
+
+                        nodes_positions[j].0,
+                        nodes_positions[j].1,
+                    );
+                    if new_tail_pos_x == nodes_positions[j].0 && new_tail_pos_y == nodes_positions[j].1
+                    {
+                        break;
+                    }
+                    
+                    nodes_positions[j].0 = new_tail_pos_x;
+                    nodes_positions[j].1 = new_tail_pos_y;
+                    if j <= n_knots - 2 {
+                        continue
+                    }
+                    tail_nodes_visited.insert((nodes_positions[j].0, nodes_positions[j].1), 1);
+                }
+            }
+        }
+        print!("Day 9: {}\n", tail_nodes_visited.len() + 1);
     }
 }
 fn main() {
@@ -762,7 +837,7 @@ fn main() {
     day08::count_visible_trees(read_input(8));
     day08::get_most_scenic_tree(read_input(8));
     day09::calculate_tail_moves(read_input(9));
-
+    day09::calculate_multiple_knots_moves(read_input(9));
 }
 
 fn read_input(day: usize) -> String {
