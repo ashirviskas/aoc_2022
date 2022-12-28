@@ -968,7 +968,12 @@ mod day23 {
         let n_rounds: usize = 10;
         let mut grid: [[char; GRID_SIZE]; GRID_SIZE] = [['.'; GRID_SIZE]; GRID_SIZE];
         let mut elve_positions: Vec<(usize, usize)> = Vec::new();
-        
+        // stack of 4 directions
+        let mut directions: Vec<char> = Vec::new();
+        directions.push('N');
+        directions.push('S');
+        directions.push('W');
+        directions.push('E');
         let lines = data.lines();
         for (i, line) in lines.enumerate() {
             for (j, c) in line.chars().enumerate() {
@@ -984,6 +989,7 @@ mod day23 {
 
             elve_positions = center_positions(&elve_positions, &mut grid);
             grid = do_round(&mut elve_positions, &mut grid);
+            let direct
         }
         let (min_x, max_x, min_y, max_y) = get_grid_bbox(&elve_positions);
         let empty_spaces = count_empty_spaces_in_bbox(&elve_positions, min_x, max_x, min_y, max_y);
