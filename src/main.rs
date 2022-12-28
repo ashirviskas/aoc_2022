@@ -826,7 +826,8 @@ mod day09 {
 }
 
 mod day23 {
-    const GRID_SIZE : usize = 10;
+    // This part is very ugly, wrote it when I was really tired. Can be improved a lot. Do not take it as an example.
+    const GRID_SIZE : usize = 200;
 
     pub fn construct_grid_from_positions(elve_positions: &Vec<(usize, usize)>) -> [[char; GRID_SIZE]; GRID_SIZE] {
         let mut grid: [[char; GRID_SIZE]; GRID_SIZE] = [['.'; GRID_SIZE]; GRID_SIZE];
@@ -855,7 +856,7 @@ mod day23 {
         }
     }
 
-    pub fn do_round(elve_positions: &mut Vec<(usize, usize)>, grid: &mut [[char; GRID_SIZE]; GRID_SIZE]) -> [[char; GRID_SIZE]; GRID_SIZE] {
+    pub fn do_round(elve_positions: &mut Vec<(usize, usize)>, grid: &mut [[char; GRID_SIZE]; GRID_SIZE], directions: &Vec<char>) -> [[char; GRID_SIZE]; GRID_SIZE] {
         let mut next_positions: Vec<(usize, usize)> = elve_positions.clone();
 
         let mut next_grid: [[i32; GRID_SIZE]; GRID_SIZE] = [[0; GRID_SIZE]; GRID_SIZE];
@@ -879,29 +880,32 @@ mod day23 {
                 continue;
             }
 
-            // Checking North
-            if grid[*x-1][*y-1] != '#' && grid[*x-1][*y] != '#' && grid[*x-1][*y+1] != '#' { 
-                next_positions[i].0 -= 1;
-                next_grid[*x-1][*y] += 1;
-                continue;
-            }
-            // Checking South
-            if grid[*x+1][*y-1] != '#' && grid[*x+1][*y] != '#' && grid[*x+1][*y+1] != '#' { 
-                next_positions[i].0 += 1;
-                next_grid[*x+1][*y] += 1;
-                continue;
-            }
-            // Checking West
-            if grid[*x-1][*y-1] != '#' && grid[*x][*y-1] != '#' && grid[*x+1][*y-1] != '#' { 
-                next_positions[i].1 -= 1;
-                next_grid[*x][*y-1] += 1;
-                continue;
-            }
-            // Checking East
-            if grid[*x-1][*y+1] != '#' && grid[*x][*y+1] != '#' && grid[*x+1][*y+1] != '#' { 
-                next_positions[i].1 += 1;
-                next_grid[*x][*y+1] += 1;
-                continue;
+            for direction in directions {
+                if check_direction(grid, *x, *y, *direction) {
+                    match direction {
+                        'N' => {
+                            next_positions[i].0 -= 1;
+                            next_grid[*x-1][*y] += 1;
+                            break;
+                        }
+                        'S' => {
+                            next_positions[i].0 += 1;
+                            next_grid[*x+1][*y] += 1;
+                            break;
+                        }
+                        'W' => {
+                            next_positions[i].1 -= 1;
+                            next_grid[*x][*y-1] += 1;
+                            break;
+                        }
+                        'E' => {
+                            next_positions[i].1 += 1;
+                            next_grid[*x][*y+1] += 1;
+                            break;
+                        }
+                        _ => panic!("Unknown direction"),
+                    }
+                }
             }
             
         }
@@ -944,7 +948,7 @@ mod day23 {
     }
 
     pub fn count_empty_spaces_in_bbox(elve_positions: &Vec<(usize, usize)>, min_x: usize, max_x: usize, min_y: usize, max_y: usize) -> usize {
-        let count = (max_x - min_x) * (max_y - min_y) - elve_positions.len();
+        let count = (max_x - min_x + 1) * (max_y - min_y + 1) - elve_positions.len();
         count
     }
 
@@ -974,6 +978,8 @@ mod day23 {
         directions.push('S');
         directions.push('W');
         directions.push('E');
+
+
         let lines = data.lines();
         for (i, line) in lines.enumerate() {
             for (j, c) in line.chars().enumerate() {
@@ -984,16 +990,22 @@ mod day23 {
             }
         }
 
-
-        for _round in 0..n_rounds {
-
+        let mut round_count = 0;
+        loop {
+            let grid_copy = grid.clone();
             elve_positions = center_positions(&elve_positions, &mut grid);
-            grid = do_round(&mut elve_positions, &mut grid);
-            let direct
+            grid = do_round(&mut elve_positions, &mut grid, &directions);
+            let first_direction = directions.remove(0);
+            directions.push(first_direction);
+            if grid == grid_copy { //change to checking round count for p1
+                break;
+            }
+            round_count += 1;
         }
         let (min_x, max_x, min_y, max_y) = get_grid_bbox(&elve_positions);
         let empty_spaces = count_empty_spaces_in_bbox(&elve_positions, min_x, max_x, min_y, max_y);
         print!("Day 23: {}\n", empty_spaces);
+        print!("Day 23 p2: {}\n", round_count + 1);
     }
 }
 fn main() {
