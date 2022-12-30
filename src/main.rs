@@ -896,6 +896,125 @@ mod day10 {
     }
 }
 
+mod day11 {
+    use std::str::Lines;
+
+    pub fn read_monkey(data: String, starting_items: &mut Vec<Vec<usize>>, operations: &mut Vec<(usize, usize, bool)>, test_cases: &mut Vec<usize>, conditional_destinations: &mut Vec<(usize, usize)>) {
+        let mut lines = data.lines();
+        // Starting items
+        let starting_items_line = lines.next().unwrap();
+        let starting_items_str = starting_items_line.split_at(18).1;
+        let starting_items_m = starting_items_str.split(",");
+        let starting_items_vec: Vec<usize> = starting_items_m.map(|x| x.trim().parse::<usize>().unwrap()).collect();
+        // Operation parsing
+        let operations_line = lines.next().unwrap();
+        let operations_str = operations_line.split_at(19).1;
+        let mut operation = (0, 0, false);
+        if operations_str.matches("old").count() == 2 {
+            operation = (0, 0, true);
+        } else {
+            let operation_char = operations_str.chars().nth(4).unwrap();
+            let operation_value = operations_str.split_at(5).1.trim().parse::<usize>().unwrap();
+            match operation_char {
+                '+' => {
+                    operation = (operation_value, 0, false);
+                }
+                '*' => {
+                    operation = (0, operation_value, false);
+                }
+                _ => panic!("Unknown operation"),
+            }
+        }
+        // Test case
+        let test_case_line = lines.next().unwrap();    
+        let test_case_str = test_case_line.split_at(21).1;
+        let test_case = test_case_str.trim().parse::<usize>().unwrap();
+        // Conditional destination
+
+        let conditional_true_line = lines.next().unwrap();
+        let conditional_true_str = conditional_true_line.split_at(28).1;
+        let conditional_true = conditional_true_str.trim().parse::<usize>().unwrap();
+
+        let conditional_false_line = lines.next().unwrap();
+        let conditional_false_str = conditional_false_line.split_at(29).1;
+        let conditional_false = conditional_false_str.trim().parse::<usize>().unwrap();
+
+        let conditional_destination = (conditional_true, conditional_false);
+
+        starting_items.push(starting_items_vec);
+        operations.push(operation);
+        test_cases.push(test_case);
+        conditional_destinations.push(conditional_destination);
+
+    }
+    pub fn take_n_lines(lines: &mut Lines<'_>, n: usize) -> String {
+        return lines.take(n).collect::<Vec<&str>>().join("\n");
+    }
+
+    pub fn do_round(starting_items: &mut Vec<Vec<usize>>, operations: &Vec<(usize, usize, bool)>, test_cases: &Vec<usize>, conditional_destinations: &Vec<(usize, usize)>, inspections_count: &mut Vec<usize>)  {
+        for i in 0..starting_items.len() {
+            inspections_count[i] += starting_items[i].len();
+            let operation = &operations[i];
+            let test_case = &test_cases[i];
+            let conditional_destinations = &conditional_destinations[i];
+            while starting_items[i].len() > 0 {
+                let item = starting_items[i].remove(0);
+                let mut new_item = item;
+                if operation.2 {
+                    new_item = new_item * new_item;
+                }
+                if operation.0 != 0 {
+                    new_item += operation.0;
+                }
+                if operation.1 != 0 {
+                    new_item *= operation.1;
+                }
+                new_item = (new_item as f32 / 3.0).floor() as usize;
+                let destination:usize;
+
+                if new_item % *test_case == 0 {
+                    destination = conditional_destinations.0;
+                } else {
+                    destination = conditional_destinations.1;
+                }
+                starting_items[destination].push(new_item);
+            }
+        }
+    }
+
+    pub fn play_keep_away(data: String) {
+        let mut starting_items: Vec<Vec<usize>> = Vec::new();
+        let mut operations: Vec<(usize, usize, bool)> = Vec::new();
+        let mut test_cases: Vec<usize> = Vec::new();
+        let mut conditional_destinations: Vec<(usize, usize)> = Vec::new();
+        let mut inspections_count: Vec<usize> = Vec::new();
+
+        let mut lines = data.lines();
+        // skip first, get next 5 lines
+        lines.next();
+        let mut monkey_data = take_n_lines(&mut lines, 5);
+
+
+        while monkey_data != "" {
+            read_monkey(monkey_data, &mut starting_items, &mut operations, &mut test_cases, &mut conditional_destinations);
+            inspections_count.push(0);
+            lines.next();
+            lines.next();
+            monkey_data = take_n_lines(&mut lines, 5);
+        }
+        for i in 0..20 {
+
+            do_round(&mut starting_items, &operations, &test_cases, &conditional_destinations, &mut inspections_count);
+        }
+        inspections_count.sort();
+        let top_two_inspection_count = inspections_count.iter().rev().take(2).collect::<Vec<&usize>>();
+        let monkey_business = top_two_inspection_count[0] * top_two_inspection_count[1];
+        println!("Day 11: {}", monkey_business);
+
+        
+    }
+}
+
 mod day23 {
     // This part is very ugly, wrote it when I was really tired. Can be improved a lot. Do not take it as an example.
     const GRID_SIZE : usize = 200;
@@ -1094,6 +1213,7 @@ fn main() {
     day09::calculate_tail_moves(read_input(9));
     day09::calculate_multiple_knots_moves(read_input(9));
     day10::simulate_cpu(read_input(10));
+    day11::play_keep_away(read_input(11));
     day23::game_of_elves(read_input(23));
 }
 
