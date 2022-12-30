@@ -899,13 +899,21 @@ mod day10 {
 mod day11 {
     use std::str::Lines;
 
-    pub fn read_monkey(data: String, starting_items: &mut Vec<Vec<usize>>, operations: &mut Vec<(usize, usize, bool)>, test_cases: &mut Vec<usize>, conditional_destinations: &mut Vec<(usize, usize)>) {
+    #[derive(Clone)]
+    pub struct Monke{
+        starting_items: Vec<u64>,
+        operation: (usize, usize, bool),
+        test_case: usize,
+        conditional_destination: (usize, usize),
+    }
+
+    pub fn read_monkey(data: String, monkes: &mut Vec<Monke>) {
         let mut lines = data.lines();
         // Starting items
         let starting_items_line = lines.next().unwrap();
         let starting_items_str = starting_items_line.split_at(18).1;
         let starting_items_m = starting_items_str.split(",");
-        let starting_items_vec: Vec<usize> = starting_items_m.map(|x| x.trim().parse::<usize>().unwrap()).collect();
+        let starting_items_vec: Vec<u64> = starting_items_m.map(|x| x.trim().parse::<u64>().unwrap()).collect();
         // Operation parsing
         let operations_line = lines.next().unwrap();
         let operations_str = operations_line.split_at(19).1;
@@ -941,52 +949,58 @@ mod day11 {
 
         let conditional_destination = (conditional_true, conditional_false);
 
-        starting_items.push(starting_items_vec);
-        operations.push(operation);
-        test_cases.push(test_case);
-        conditional_destinations.push(conditional_destination);
+        monkes.push(Monke{
+            starting_items: starting_items_vec,
+            operation: operation,
+            test_case: test_case,
+            conditional_destination: conditional_destination,
+        });
 
     }
     pub fn take_n_lines(lines: &mut Lines<'_>, n: usize) -> String {
         return lines.take(n).collect::<Vec<&str>>().join("\n");
     }
 
-    pub fn do_round(starting_items: &mut Vec<Vec<usize>>, operations: &Vec<(usize, usize, bool)>, test_cases: &Vec<usize>, conditional_destinations: &Vec<(usize, usize)>, inspections_count: &mut Vec<usize>)  {
-        for i in 0..starting_items.len() {
-            inspections_count[i] += starting_items[i].len();
-            let operation = &operations[i];
-            let test_case = &test_cases[i];
-            let conditional_destinations = &conditional_destinations[i];
-            while starting_items[i].len() > 0 {
-                let item = starting_items[i].remove(0);
-                let mut new_item = item;
-                if operation.2 {
-                    new_item = new_item * new_item;
-                }
-                if operation.0 != 0 {
-                    new_item += operation.0;
-                }
-                if operation.1 != 0 {
-                    new_item *= operation.1;
-                }
-                new_item = (new_item as f32 / 3.0).floor() as usize;
-                let destination:usize;
+    pub fn do_rounds(monkes: &mut Vec<Monke>, worry_function: impl Fn(u64) -> u64, n_rounds: usize) -> u64{
+        let mut inspections_count: Vec<usize> = vec![0; monkes.len()];
+        for _ in 0..n_rounds {
+            for i in 0..monkes.len() {
+                inspections_count[i] += monkes[i].starting_items.len();
+                let operation = &monkes[i].operation.clone();
+                let test_case = monkes[i].test_case;
+                let conditional_destinations = monkes[i].conditional_destination;
+                while monkes[i].starting_items.len() > 0 {
+                    let item = monkes[i].starting_items.remove(0).clone();
+                    let mut new_item = item;
+                    if operation.2 {
+                        new_item = new_item * new_item;
+                    }
+                    if operation.0 != 0 {
+                        new_item += operation.0 as u64;
+                    }
+                    if operation.1 != 0 {
+                        new_item *= operation.1 as u64;
+                    }
+                    new_item = worry_function(new_item);
+                    let destination:usize;
 
-                if new_item % *test_case == 0 {
-                    destination = conditional_destinations.0;
-                } else {
-                    destination = conditional_destinations.1;
+                    if new_item % test_case as u64 == 0 {
+                        destination = conditional_destinations.0;
+                    } else {
+                        destination = conditional_destinations.1;
+                    }
+                    monkes[destination].starting_items.push(new_item);
                 }
-                starting_items[destination].push(new_item);
             }
         }
+        inspections_count.sort();
+        let top_two_inspection_count = inspections_count.iter().rev().take(2).collect::<Vec<&usize>>();
+        let monkey_business = *top_two_inspection_count[0] as u64 * *top_two_inspection_count[1] as u64;
+        return monkey_business;
     }
 
     pub fn play_keep_away(data: String) {
-        let mut starting_items: Vec<Vec<usize>> = Vec::new();
-        let mut operations: Vec<(usize, usize, bool)> = Vec::new();
-        let mut test_cases: Vec<usize> = Vec::new();
-        let mut conditional_destinations: Vec<(usize, usize)> = Vec::new();
+        let mut monkes: Vec<Monke> = Vec::new();
         let mut inspections_count: Vec<usize> = Vec::new();
 
         let mut lines = data.lines();
@@ -996,20 +1010,21 @@ mod day11 {
 
 
         while monkey_data != "" {
-            read_monkey(monkey_data, &mut starting_items, &mut operations, &mut test_cases, &mut conditional_destinations);
+            read_monkey(monkey_data, &mut monkes);
             inspections_count.push(0);
             lines.next();
             lines.next();
             monkey_data = take_n_lines(&mut lines, 5);
         }
-        for i in 0..20 {
+        let monke_product = monkes.iter().map(|x| x.test_case).product::<usize>();
 
-            do_round(&mut starting_items, &operations, &test_cases, &conditional_destinations, &mut inspections_count);
-        }
-        inspections_count.sort();
-        let top_two_inspection_count = inspections_count.iter().rev().take(2).collect::<Vec<&usize>>();
-        let monkey_business = top_two_inspection_count[0] * top_two_inspection_count[1];
+        
+        let monkey_business = do_rounds(&mut monkes.clone(), |x| x / 3, 20);
         println!("Day 11: {}", monkey_business);
+
+        let monkey_business = do_rounds(&mut monkes, |x| x % monke_product as u64, 10000);
+        println!("Day 11 p2: {}", monkey_business);
+
 
         
     }
