@@ -1030,6 +1030,267 @@ mod day11 {
     }
 }
 
+mod day12{
+    use pathfinding::prelude::dijkstra;
+
+    #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    pub struct Pos(usize, usize, char);
+
+    impl Pos {
+        pub fn neighbours(&self, char_map: &Vec<Vec<char>>, do_reverse:bool) -> Vec<(Pos, usize)> {
+            let mut neighbours = Vec::new();
+            let positions = vec![
+                (self.0 as i32 - 1, self.1 as i32 ),
+                (self.0 as i32 + 1, self.1 as i32 ),
+                (self.0 as i32 , self.1 as i32  - 1),
+                (self.0 as i32 , self.1 as i32  + 1),
+            ];
+            for pos in positions {
+                if pos.0 < char_map.len() as i32 && pos.0 >= 0 && pos.1 < char_map[0].len() as i32 && pos.1 >= 0 {
+                    let pos = (pos.0 as usize, pos.1 as usize);
+                    let val = get_val_cost(self.2, char_map[pos.0][pos.1], do_reverse);
+                    if val != 10000 {
+                        neighbours.push((Pos(pos.0, pos.1, char_map[pos.0][pos.1]), val));
+                    }
+                }
+            }
+            // println!("{:?}", neighbours);
+            neighbours
+        }
+    }
+
+
+    pub fn get_val_cost(cur_char: char, other_char: char, do_reverse: bool) -> usize {
+        let cur_char_val = get_char_cost(cur_char) as i32;
+        let other_val = get_char_cost(other_char) as i32;
+
+        let score = other_val - cur_char_val;
+        
+        if score > 1 && !do_reverse {
+            return 10000;
+        }
+        if score < -1 && do_reverse {
+            return 10000;
+        }
+
+        return 1;
+    }
+
+    pub fn get_char_cost(character:char) -> usize {
+        if character == 'S' {
+            return 0;
+        }
+        if character == 'E' {
+            return 'z' as usize - 'a' as usize;
+        }
+        return character as usize - 'a' as usize;
+    }
+
+    pub fn build_path_map(positions: Vec<Pos>, char_map: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+        let mut travel_map = vec![vec!['.'; char_map[0].len()]; char_map.len()];
+        let mut previous_pos = positions[0].clone();
+        for position in positions {
+            // if right
+            if position.1 > previous_pos.1 {
+                travel_map[previous_pos.0][previous_pos.1] = '>';
+            }
+            // if left
+            if position.1 < previous_pos.1 {
+                travel_map[previous_pos.0][previous_pos.1] = '<';
+            }
+            // if up
+            if position.0 < previous_pos.0 {
+                travel_map[previous_pos.0][previous_pos.1] = '^';
+            }
+            // if down
+            if position.0 > previous_pos.0 {
+                travel_map[previous_pos.0][previous_pos.1] = 'v';
+            }
+            previous_pos = position;
+        }
+        travel_map
+    }
+    pub fn hill_climb_racing(data:String) {
+        let char_map = data.lines().map(|x| x.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
+        let start_pos = char_map.iter().enumerate().flat_map(|(y, x)| x.iter().enumerate().filter_map(move |(x, c)| if *c == 'S' { Some((y, x)) } else { None })).next().unwrap();
+        let result_a = dijkstra(&Pos(start_pos.0, start_pos.1, 'S'), |x| x.neighbours(&char_map, false), |x| x.2 == 'E');
+        let result_a = result_a.unwrap();
+        print!("Day 12: {}\n", result_a.0.len() -1);
+
+        let start_pos_b = char_map.iter().enumerate().flat_map(|(y, x)| x.iter().enumerate().filter_map(move |(x, c)| if *c == 'E' { Some((y, x)) } else { None })).next().unwrap();
+        let result_b = dijkstra(&Pos(start_pos_b.0, start_pos_b.1, 'E'), |x| x.neighbours(&char_map, true), |x| x.2 == 'a');
+        let result_b = result_b.unwrap();
+        print!("Day 12 p2: {}\n", result_b.0.len() -1);
+        // let travel_map = build_path_map(result_a.0, &char_map);
+        // for line in travel_map {
+        //     for character in line {
+        //         print!("{}", character);
+        //     }
+        //     println!("");
+        // }
+    }
+}
+
+mod day13 { 
+    use std::cmp::Ordering;
+    use std::fmt::Display;
+    use std::fmt::Formatter;
+
+    // Derive comparison trait
+    #[derive(Debug, Clone)]
+    pub struct ListElement {
+        value_number: Option<usize>,
+        value_list: Option<Vec<ListElement>>,
+    }
+
+    impl ListElement {
+        pub fn new(data: String) -> ListElement {
+            if data.starts_with('[') {
+                ListElement {
+                    value_number: None,
+                    value_list: Some(get_elements_from_string(&data)),
+                }
+            } else if data.len() == 0 {
+                ListElement {
+                    value_number: None,
+                    value_list: Some(vec![]),
+                }
+            } else {
+                ListElement {
+                    value_number: Some(data.parse::<usize>().unwrap()),
+                    value_list: None,
+                }
+            }
+        }
+    }
+
+    impl Ord for ListElement {
+        fn cmp(&self, other: &ListElement) -> Ordering {
+            if self.value_number.is_some() && other.value_number.is_some() {
+                self.value_number.unwrap().cmp(&other.value_number.unwrap())
+            } else if self.value_number.is_some() && other.value_list.is_some() {
+                let new_list_element = ListElement {
+                    value_number: None,
+                    value_list: Some(vec![self.clone()]),
+                };
+                new_list_element.cmp(&other)
+            } else if self.value_list.is_some() && other.value_number.is_some() {
+                let new_list_element = ListElement {
+                    value_number: None,
+                    value_list: Some(vec![other.clone()]),
+                };
+                self.cmp(&new_list_element)
+            } else {
+                for (i, element) in self.value_list.as_ref().unwrap().iter().enumerate() {
+                    if i >= other.value_list.as_ref().unwrap().len() {
+                        return std::cmp::Ordering::Greater;
+                    }
+                    let other_element = &other.value_list.as_ref().unwrap()[i];
+                    let result = element.cmp(other_element);
+                    if result != std::cmp::Ordering::Equal {
+                        return result;
+                    }
+                }
+                if self.value_list.as_ref().unwrap().len() < other.value_list.as_ref().unwrap().len() {
+                    std::cmp::Ordering::Less
+                } else {
+                    std::cmp::Ordering::Equal
+                }
+            }
+        }
+    }
+
+    impl PartialOrd for ListElement {
+        fn partial_cmp(&self, other: &ListElement) -> Option<Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
+    impl PartialEq for ListElement {
+        fn eq(&self, other: &ListElement) -> bool {
+            self.cmp(other) == Ordering::Equal
+        }
+    }
+
+    impl Eq for ListElement {}
+
+    impl Display for ListElement {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            if self.value_number.is_some() {
+                write!(f, "{}", self.value_number.unwrap())
+            } else {
+                write!(f, "[")?;
+                for (i, element) in self.value_list.as_ref().unwrap().iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ",")?;
+                    }
+                    write!(f, "{}", element)?;
+                }
+                write!(f, "]")
+            }
+        }
+    }
+
+    pub fn get_elements_from_string(data: &str) -> Vec<ListElement> {
+        let mut elements = Vec::new();
+        // let mut element = String::new();
+        let mut running_string = String::new();
+        let mut running_brackets = 0;
+
+        for (i, character) in data.chars().enumerate() {
+            if i == 0 {
+                continue;
+            }
+            if i == data.len() - 1 {
+                continue;
+            }
+
+            if character == '[' {
+                running_brackets += 1;
+            }
+            if character == ']' {
+                running_brackets -= 1;
+
+                if running_string == "[" {
+                    running_string = "[]".to_string();
+                    continue
+                }
+            }
+            if character == ',' && running_brackets == 0 {
+                let element = ListElement::new(running_string);
+                elements.push(element);
+                running_string = String::new();
+            } else {
+                running_string.push(character);
+            }
+        }
+        let element = ListElement::new(running_string);
+        elements.push(element);
+        // println!("{:?}", elements);
+        elements
+        
+    }
+
+    pub fn do_brackets(data: String) {
+        let mut pairs = data.split("\n\n").map(|x| x.to_string()).collect::<Vec<String>>();
+        let mut matching_indices_sum = 0;
+
+        for (i, pair) in pairs.iter().enumerate() {
+            let (pair_a, pair_b) = pair.split_once("\n").unwrap();
+            let pair_a = ListElement::new(pair_a.to_string());
+            let pair_b = ListElement::new(pair_b.to_string());
+            // println!("{} vs {} = {:?}", pair_a, pair_b, pair_a.cmp(&pair_b));
+
+            let comparison = pair_a.cmp(&pair_b);
+            if comparison == Ordering::Less {
+                matching_indices_sum += i + 1;
+            }
+            // println!("{} vs {} = {:?}", pair_a, pair_b, comparison);
+        }
+        println!("Day 13: {}", matching_indices_sum);
+    }
+}
+
 mod day23 {
     // This part is very ugly, wrote it when I was really tired. Can be improved a lot. Do not take it as an example.
     const GRID_SIZE : usize = 200;
@@ -1229,6 +1490,8 @@ fn main() {
     day09::calculate_multiple_knots_moves(read_input(9));
     day10::simulate_cpu(read_input(10));
     day11::play_keep_away(read_input(11));
+    day12::hill_climb_racing(read_input(12));
+    day13::do_brackets(read_input(13));
     day23::game_of_elves(read_input(23));
 }
 
