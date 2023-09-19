@@ -1166,6 +1166,7 @@ mod day13 {
 
     impl Ord for ListElement {
         fn cmp(&self, other: &ListElement) -> Ordering {
+            // println!("Comparing {} and {}", self, other);
             if self.value_number.is_some() && other.value_number.is_some() {
                 self.value_number.unwrap().cmp(&other.value_number.unwrap())
             } else if self.value_number.is_some() && other.value_list.is_some() {
@@ -1173,12 +1174,18 @@ mod day13 {
                     value_number: None,
                     value_list: Some(vec![self.clone()]),
                 };
+                // Debug printing
+                // println!("Original: {} vs {}", self, other);
+                // println!("New: {} vs {}", new_list_element, other);
                 new_list_element.cmp(&other)
             } else if self.value_list.is_some() && other.value_number.is_some() {
                 let new_list_element = ListElement {
                     value_number: None,
                     value_list: Some(vec![other.clone()]),
                 };
+                // Debug printing
+                // println!("Original: {} vs {}", self, other);
+                // println!("New: {} vs {}", self, new_list_element);
                 self.cmp(&new_list_element)
             } else {
                 for (i, element) in self.value_list.as_ref().unwrap().iter().enumerate() {
@@ -1288,6 +1295,17 @@ mod day13 {
             // println!("{} vs {} = {:?}", pair_a, pair_b, comparison);
         }
         println!("Day 13: {}", matching_indices_sum);
+        // all brackets, skip empty liness, use ListElement
+        let mut all_brackets = data.split("\n").filter(|x| x.len() > 0).map(|x| x.to_string()).map(|x| ListElement::new(x)).collect::<Vec<ListElement>>();
+        // Add 2 more custom brackets
+        all_brackets.append(&mut vec![ListElement::new("[[2]]".to_string()), ListElement::new("[[6]]".to_string())]);
+        // let all_brackets_str = all_brackets.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("\n");
+        // println!("Day 13 p2: {:?}", all_brackets_str);
+        all_brackets.sort();
+        // let all_brackets_str_sorted = all_brackets.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("\n");
+        let custom_brackets_index_a = all_brackets.iter().position(|x| x.to_string() == "[[2]]").unwrap();
+        let custom_brackets_index_b = all_brackets.iter().position(|x| x.to_string() == "[[6]]").unwrap();
+        println!("Day 13 p2: {}x{}={}", custom_brackets_index_a + 1, custom_brackets_index_b + 1, (custom_brackets_index_a + 1) * (custom_brackets_index_b + 1));
     }
 }
 
