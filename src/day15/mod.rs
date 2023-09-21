@@ -20,7 +20,22 @@ pub fn draw_locations(locations: &Vec<(i32, i32, char)>) -> Vec<Vec<char>> {
     return framebuffer;
 }
 
-pub fn beacon_the_sensors(data: String) {
+pub fn check_location_possibility(x: i32, y: i32, locations: &Vec<(i32, i32, i32, i32, i32)>) -> bool {
+    let mut location_possibility = true;
+    for location in locations {
+        if location.2 == x && location.3 == y {
+            location_possibility = true;
+            break;
+        }
+        let distance = (x - location.0).abs() + (y - location.1).abs();
+        if distance <= location.4 {
+            location_possibility = false;
+            break;
+        }
+    }
+    location_possibility
+}
+pub fn beacon_the_sensors(data: String, line_to_check: i32) {
     let mut sensors_beacons = data.split("\n")
         .flat_map(|s| s.split("="))
         .map(|s| s
@@ -33,50 +48,21 @@ pub fn beacon_the_sensors(data: String) {
         .chunks(4).map(|s| (s[0], s[1], s[2], s[3]))
         .collect::<Vec<(i32, i32, i32, i32)>>();
 
-    let mut min_x = sensors_beacons.iter().flat_map(|s| vec![s.0, s.2]).min().unwrap();
-    let mut max_x = sensors_beacons.iter().flat_map(|s| vec![s.0, s.2]).max().unwrap();
-
-    let mut min_y = sensors_beacons.iter().flat_map(|s| vec![s.1, s.3]).min().unwrap();
-    let mut max_y = sensors_beacons.iter().flat_map(|s| vec![s.1, s.3]).max().unwrap();
+    let min_x = sensors_beacons.iter().flat_map(|s| vec![s.0, s.2]).min().unwrap();
+    let max_x = sensors_beacons.iter().flat_map(|s| vec![s.0, s.2]).max().unwrap();
+    let min_y = sensors_beacons.iter().flat_map(|s| vec![s.1, s.3]).min().unwrap();
+    let max_y = sensors_beacons.iter().flat_map(|s| vec![s.1, s.3]).max().unwrap();
     println!("min_x: {}, max_x: {}, min_y: {}, max_y: {}", min_x, max_x, min_y, max_y);
-    // draw sensors and beacons
-    // let mut framebuffer = vec![vec!['.'; (max_x - min_x + 1) as usize]; (max_y - min_y + 1) as usize];
-    let mut locations: Vec<(i32, i32, char)> = Vec::new();
-    for sensor_beacon in &sensors_beacons {
-        // framebuffer[(sensor_beacon.1 - min_y) as usize][(sensor_beacon.0 - min_x) as usize] = 'S';
-        // framebuffer[(sensor_beacon.3 - min_y) as usize][(sensor_beacon.2 - min_x) as usize] = 'B';
-        locations.push((sensor_beacon.0, sensor_beacon.1, 'S'));
-        locations.push((sensor_beacon.2, sensor_beacon.3, 'B'));
-    }
-    draw_locations(&locations);
-    // for each pair, mark locations with no possible beacons
-    for sensor_beacon in &sensors_beacons {
-        let x = sensor_beacon.0;
-        let y = sensor_beacon.1;
-        let xx = sensor_beacon.2;
-        let yy = sensor_beacon.3;
-        let distance = (xx - x).abs() + (yy - y).abs();
-        for i in -distance..=distance {
-            for j in -distance..=distance {
-                let new_x = x + i;
-                let new_y = y + j;
-                if i.abs() + j.abs() > distance {
-                    continue;
-                }
-                locations.push((new_x, new_y, '#'));
-            }
+    let sensors_beacons_distances = sensors_beacons.iter().map(|s| (s.0, s.1, s.2, s.3, (s.0 - s.2).abs() + (s.1 - s.3).abs())).collect::<Vec<(i32, i32, i32, i32, i32)>>();
+    let max_distance = sensors_beacons_distances.iter().map(|s| s.4).max().unwrap();
+    println!("max_distance: {}", max_distance);
+    let mut line_impossible_locations = 0;
+    for x in (min_x - max_distance * 2)..(max_x + max_distance * 2) {
+        // println!("x: {}, line_impossible_locations: {}", x, line_impossible_locations);
+        if !check_location_possibility(x, line_to_check, &sensors_beacons_distances) {
+            line_impossible_locations += 1;
         }
-        draw_locations(&locations);
     }
-    let framebuffer = draw_locations(&locations);
-    // counting locations with no possible beacons in line 10
-    let no_beacon_count = locations.iter()
-    .filter(|l| l.1 == 10)
-    .filter(|l| l.2 != '.')
-    .unique_by(|l| vec![l.0, l.1])
-    .count() - 1;
-    println!("");
-    draw_locations(&locations);
 
-    println!("Day 15: {}", no_beacon_count);
+    println!("Day 15: {}", line_impossible_locations);
 }
