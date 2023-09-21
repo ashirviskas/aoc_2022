@@ -93,7 +93,7 @@
             }
         }
         for line in &framebuffer {
-            println!("{}", line.iter().collect::<String>());
+            // println!("{}", line.iter().collect::<String>());
         }
         println!("Day 14: {}", sands_fallen - 1 + add_floor as u32);
     }
