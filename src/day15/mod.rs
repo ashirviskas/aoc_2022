@@ -55,19 +55,19 @@ pub fn beacon_the_sensors(data: String, line_to_check: i32, boundary: i32) {
     // println!("min_x: {}, max_x: {}, min_y: {}, max_y: {}", min_x, max_x, min_y, max_y);
     let sensors_beacons_distances = sensors_beacons.iter().map(|s| (s.0, s.1, s.2, s.3, (s.0 - s.2).abs() + (s.1 - s.3).abs())).collect::<Vec<(i32, i32, i32, i32, i32)>>();
     let max_distance = sensors_beacons_distances.iter().map(|s| s.4).max().unwrap();
-    println!("max_distance: {}", max_distance);
+    // println!("max_distance: {}", max_distance);
     let mut impossible_locations = get_line_intervals(&sensors_beacons_distances, line_to_check, (min_x - max_distance * 2, max_x + max_distance * 2));
     impossible_locations.sort_by(|a, b| a.0.cmp(&b.0));
-    println!("impossible_locations: {:?}", impossible_locations);
+    // println!("impossible_locations: {:?}", impossible_locations);
     let merged_impossible_locations = merge_intervals(&impossible_locations);
-    println!("merged_impossible_locations: {:?}", merged_impossible_locations);
+    // println!("merged_impossible_locations: {:?}", merged_impossible_locations);
 
     let mut line_impossible_locations = 0;
     for interval in merged_impossible_locations {
         line_impossible_locations += (interval.1 - interval.0).abs();
     }
 
-    println!("line_impossible_locations: {}", line_impossible_locations);
+    // println!("line_impossible_locations: {}", line_impossible_locations);
 
     for y in (min_y - max_distance * 2)..(max_y + max_distance * 2) {
         if y < 0 {

@@ -41,10 +41,13 @@ fn main() {
      timings.push(time_it(|| day15::beacon_the_sensors(read_input(15), 2000000, 4000000), "day15::beacon_the_sensors (2000000, 4000000)"));
      timings.push(time_it(|| day23::game_of_elves(read_input(23)), "day23::game_of_elves"));
 
-     // Print timings at the end
+    // Print timings as a Markdown table
+    println!("| Elapsed Time (ms) | Description                       |");
+    println!("|--------------------|----------------------------------|");
+
     for (description, elapsed) in timings {
         let elapsed = elapsed as f64 / 1000.0;
-        println!("{: >10.3} ms - {: <50} ", elapsed, description);
+        println!("| {: >17.3} | {: <50} |", elapsed, description);
     }
 }
 
