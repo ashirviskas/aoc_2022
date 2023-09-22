@@ -1,5 +1,5 @@
 pub fn get_line_intervals(locations: &Vec<(i32, i32, i32, i32, i32)>, line: i32, x_limit: (i32, i32)) -> Vec<(i32, i32)> {
-    let mut intervals = Vec::new();
+    let mut intervals = Vec::with_capacity(locations.len());
     for location in locations {
         // Check bounds
         if !(location.1 - location.4 < line && location.1 + location.4 > line) {
