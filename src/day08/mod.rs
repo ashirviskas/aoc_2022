@@ -3,7 +3,7 @@ pub fn count_visible_trees(data: String) {
     let mut tree_heights: Vec<Vec<usize>> = Vec::new();
     for line in lines {
         let chars = line.chars();
-        let mut heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
+        let heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
         tree_heights.push(heights);
     }
     let mut visible_trees: Vec<Vec<bool>> = Vec::new();
@@ -12,8 +12,8 @@ pub fn count_visible_trees(data: String) {
     // visible from top
     // visible_trees.push(vec![true; tree_heights[0].len()]);
     let mut cur_max_heights: Vec<i32> = vec![-1; cols_n];
-    let mut trees_iter = tree_heights.iter();
-    for (i, heights) in trees_iter.enumerate() {
+    let trees_iter = tree_heights.iter();
+    for (_i, heights) in trees_iter.enumerate() {
         let mut cur_visible: Vec<bool> = Vec::new();
         for j in 0..heights.len() {
             if cur_max_heights[j] >= heights[j] as i32 {
@@ -27,7 +27,7 @@ pub fn count_visible_trees(data: String) {
     }
     // visible from bottom
     cur_max_heights = vec![-1; cols_n];
-    let mut trees_iter = tree_heights.iter().rev();
+    let trees_iter = tree_heights.iter().rev();
     for (i, heights) in trees_iter.enumerate() {
         let mut cur_visible: Vec<bool> = Vec::new();
         for j in 0..heights.len() {
@@ -67,7 +67,7 @@ pub fn count_visible_trees(data: String) {
         }
     }
 
-    let mut visible_trees_count = visible_trees
+    let visible_trees_count = visible_trees
         .iter()
         .fold(0, |acc, x| acc + x.iter().filter(|x| **x).count());
     print!("Day 8: {}\n", visible_trees_count);
@@ -77,13 +77,13 @@ pub fn get_most_scenic_tree(data: String) {
     let lines = data.lines().collect::<Vec<_>>();
     let rows_n_soft = lines.len();
     let cols_n_soft = lines[0].len();
-    const rows_n: usize = 100;
-    const cols_n: usize = 100;
-    let mut tree_heights = [[0; cols_n]; rows_n];
-    let mut tree_scores = [[0; cols_n]; rows_n];
+    const ROWS_N: usize = 100;
+    const COLS_N: usize = 100;
+    let mut tree_heights = [[0; COLS_N]; ROWS_N];
+    let mut tree_scores = [[0; COLS_N]; ROWS_N];
     for (i, line) in lines.iter().enumerate() {
         let chars = line.chars();
-        let mut heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
+        let heights: Vec<usize> = chars.map(|x| x.to_digit(10).unwrap() as usize).collect();
         for (j, height) in heights.iter().enumerate() {
             tree_heights[i][j] = *height;
         }

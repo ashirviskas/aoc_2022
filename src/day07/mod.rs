@@ -71,7 +71,7 @@ pub fn get_dir_sizes(data: String) {
     // each dir has name, a parent, size and children
     let mut paths: Vec<(String, usize, Vec<String>)> = Vec::new();
     let mut cur_dir = String::new();
-    let mut prev_dir = String::new();
+    // let mut prev_dir = String::new();
     for line in lines {
         let mut parts = line.split(" ");
         if line.starts_with('$') {
@@ -79,7 +79,7 @@ pub fn get_dir_sizes(data: String) {
             let cur_fun = parts.next().unwrap().to_string();
             match cur_fun.as_str() {
                 "cd" => {
-                    prev_dir = cur_dir.clone();
+                    let prev_dir = cur_dir.clone();
                     let new_dir = parts.next().unwrap();
                     if new_dir == ".." {
                         cur_dir = get_parent_dir(cur_dir);
@@ -128,12 +128,12 @@ pub fn get_dir_sizes(data: String) {
                 {
                     paths.push((cur_dir.clone() + &file_name, file_size, Vec::new()));
                 }
-                let mut dir = paths.iter_mut().find(|x| x.0 == cur_dir).unwrap();
+                let dir = paths.iter_mut().find(|x| x.0 == cur_dir).unwrap();
                 dir.1 += file_size;
                 dir.2.push(file_name);
                 let mut dir_parent = get_parent_dir(cur_dir.clone());
                 while dir_parent != "" {
-                    let mut dir = paths.iter_mut().find(|x| x.0 == dir_parent).unwrap();
+                    let dir = paths.iter_mut().find(|x| x.0 == dir_parent).unwrap();
                     dir.1 += file_size;
                     dir_parent = get_parent_dir(dir_parent);
                 }

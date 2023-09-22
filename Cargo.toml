@@ -8,3 +8,10 @@ edition = "2021"
 [dependencies]
 itertools = "0.11.0"
 pathfinding = "4.2.0"
+
+[profile.release]
+debug = true
+
+[target.x86_64-unknown-linux-gnu]
+linker = "/usr/bin/clang"
+rustflags = ["-Clink-arg=-fuse-ld=lld", "-Clink-arg=-Wl,--no-rosegment"]

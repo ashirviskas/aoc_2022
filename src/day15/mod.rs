@@ -1,41 +1,3 @@
-use itertools::Itertools;
-
-pub fn draw_locations(locations: &Vec<(i32, i32, char)>) -> Vec<Vec<char>> {
-    let mut min_x = locations.iter().map(|l| l.0).min().unwrap();
-    let mut max_x = locations.iter().map(|l| l.0).max().unwrap();
-    let mut min_y = locations.iter().map(|l| l.1).min().unwrap();
-    let mut max_y = locations.iter().map(|l| l.1).max().unwrap();
-
-    let mut framebuffer = vec![vec!['.'; (max_x - min_x + 1) as usize]; (max_y - min_y + 1) as usize];
-    for location in locations {
-        if framebuffer[(location.1 - min_y) as usize][(location.0 - min_x) as usize] != '.' {
-            continue;
-        }
-        framebuffer[(location.1 - min_y) as usize][(location.0 - min_x) as usize] = location.2;
-    }
-    for line in &framebuffer {
-        println!("{}", line.iter().collect::<String>());
-    }
-    println!("");
-    return framebuffer;
-}
-
-pub fn check_location_possibility(x: i32, y: i32, locations: &Vec<(i32, i32, i32, i32, i32)>, ignore_existing: bool) -> bool {
-    let mut location_possibility = true;
-    for location in locations {
-        if location.2 == x && location.3 == y && !ignore_existing{
-            location_possibility = true;
-            break;
-        }
-        let distance = (x - location.0).abs() + (y - location.1).abs();
-        if distance <= location.4 {
-            location_possibility = false;
-            break;
-        }
-    }
-    location_possibility
-}
-
 pub fn get_line_intervals(locations: &Vec<(i32, i32, i32, i32, i32)>, line: i32, x_limit: (i32, i32)) -> Vec<(i32, i32)> {
     let mut intervals = Vec::new();
     for location in locations {
@@ -94,25 +56,19 @@ pub fn beacon_the_sensors(data: String, line_to_check: i32, boundary: i32) {
     let sensors_beacons_distances = sensors_beacons.iter().map(|s| (s.0, s.1, s.2, s.3, (s.0 - s.2).abs() + (s.1 - s.3).abs())).collect::<Vec<(i32, i32, i32, i32, i32)>>();
     let max_distance = sensors_beacons_distances.iter().map(|s| s.4).max().unwrap();
     println!("max_distance: {}", max_distance);
+    let mut impossible_locations = get_line_intervals(&sensors_beacons_distances, line_to_check, (min_x - max_distance * 2, max_x + max_distance * 2));
+    impossible_locations.sort_by(|a, b| a.0.cmp(&b.0));
+    println!("impossible_locations: {:?}", impossible_locations);
+    let merged_impossible_locations = merge_intervals(&impossible_locations);
+    println!("merged_impossible_locations: {:?}", merged_impossible_locations);
+
     let mut line_impossible_locations = 0;
-    for x in (min_x - max_distance * 2)..(max_x + max_distance * 2) {
-        // println!("x: {}, line_impossible_locations: {}", x, line_impossible_locations);
-        if !check_location_possibility(x, line_to_check, &sensors_beacons_distances, false) {
-            line_impossible_locations += 1;
-        }
+    for interval in merged_impossible_locations {
+        line_impossible_locations += (interval.1 - interval.0).abs();
     }
 
-    // 'outer: for x in 0..boundary {
-    //     for y in 0..boundary {
-    //         if check_location_possibility(x, y, &sensors_beacons_distances, true) {
-    //             println!("Found! x: {}, y: {}", x, y);
-    //             let frequency = x * 4000000 + y;
-    //             println!("Frequency: {}", frequency);
-    //             break 'outer;
-    //         }
-    //     }
-    // }
-    // Intervals
+    println!("line_impossible_locations: {}", line_impossible_locations);
+
     for y in (min_y - max_distance * 2)..(max_y + max_distance * 2) {
         if y < 0 {
             continue;
@@ -129,7 +85,7 @@ pub fn beacon_the_sensors(data: String, line_to_check: i32, boundary: i32) {
         if merged_intervals.len() == 1 {
             continue;
         } else {
-            println!("Found! x: {}, y: {}", merged_intervals[0].1 + 1, y);
+            // println!("Found! x: {}, y: {}", merged_intervals[0].1 + 1, y);
             let frequency = (merged_intervals[0].1 + 1) as i64 * 4000000 + y as i64;
             println!("Frequency: {}", frequency);
             break;
