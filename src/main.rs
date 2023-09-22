@@ -33,8 +33,8 @@ fn main() {
     day12::hill_climb_racing(read_input(12));
     day13::do_brackets(read_input(13));
     day14::do_sand(read_input(14));
-    day15::beacon_the_sensors(read_input(151), 10);
-    day15::beacon_the_sensors(read_input(15), 2000000);
+    day15::beacon_the_sensors(read_input(151), 10, 20);
+    day15::beacon_the_sensors(read_input(15), 2000000, 4000000);
     day23::game_of_elves(read_input(23));
 }
 
