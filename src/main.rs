@@ -47,7 +47,7 @@ fn main() {
 
     for (description, elapsed) in timings {
         let elapsed = elapsed as f64 / 1000.0;
-        println!("| {: >17.3} | {: <50} |", elapsed, description);
+        println!("| `{: >9.3} ms` | {: <50} |", elapsed, description);
     }
 }
 
